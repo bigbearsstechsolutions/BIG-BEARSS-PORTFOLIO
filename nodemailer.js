@@ -4,16 +4,19 @@
 
   const transporter = nodemailer.createTransport({
     service: "smtp.gmail.com",
-    port: 587,
-    secure: false, 
+    port: 465,
     auth: {
       user: process.env.GMAIL_USER,
       pass: process.env.GMAIL_APP_PASS
-    }
-  })
+    },
+    tls: {
+      rejectUnauthorized: false  // ✅ ye bhi add karo
+    },
+    secure: true, 
+  });
 
   try {
-    await transporter.sendMail({
+    const sendMail = {
       from: process.env.GMAIL_USER,
       to: process.env.GMAIL_USER,
       subject: `New Inquiry from ${name}`,
@@ -28,9 +31,21 @@
         <p><b>Source:</b> ${source}</p>
         <p><b>Message:</b> ${message}</p>
       `,
+    };
+    await new Promise((resolve, reject) =>{
+      transporter.sendMail(sendMail, (error, info) =>{
+        if(error){
+          console.error(error)
+          reject(error)
+        }else{
+          resolve(info)
+        }
+      })
     })
 
-    res.json({ ok: true })
+    res.status(200).json({
+      message : "Email sent successfully"
+    })
 
   } catch (error) {
     console.error("EMAIL ERROR:", error.message)  // ✅ error print hoga
