@@ -1,0 +1,41 @@
+ const nodemailer = require('nodemailer')
+ const sendmail = async (req, res) => {
+  const { name, email, phone, company, service, budget, message, source } = req.body
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    port: 465,
+    secure: true, 
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASS
+    }
+  })
+
+  try {
+    await transporter.sendMail({
+      from: process.env.GMAIL_USER,
+      to: process.env.GMAIL_USER,
+      subject: `New Inquiry from ${name}`,
+      html: `
+        <h2>New Client Inquiry</h2>
+        <p><b>Name:</b> ${name}</p>
+        <p><b>Email:</b> ${email}</p>
+        <p><b>Phone:</b> ${phone}</p>
+        <p><b>Company:</b> ${company}</p>
+        <p><b>Service:</b> ${service}</p>
+        <p><b>Budget:</b> ${budget}</p>
+        <p><b>Source:</b> ${source}</p>
+        <p><b>Message:</b> ${message}</p>
+      `,
+    })
+
+    res.json({ ok: true })
+
+  } catch (error) {
+    console.error("EMAIL ERROR:", error.message)  // ✅ error print hoga
+    res.status(500).json({ ok: false, error: error.message })
+  }
+}
+
+module.exports = sendmail
